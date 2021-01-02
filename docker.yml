@@ -1,0 +1,33 @@
+- hosts: Webservers
+  tasks:
+  - name: docker repo for yum
+    yum_repository: 
+      name: dockername
+      description: for docker
+      baseurl: http://download.docker.com/linux/centos/7/x86_64/stable/
+      gpgcheck: no
+  - name: Installing docker
+    command: "yum install docker-ce --nobest -y"
+  - name: Starting the docker service
+    service:
+     name: docker
+     state: started
+  - name: Installing docker module for python 
+    pip:
+     name: "docker"
+  - name: Creating a workspace for the files
+    file:
+     path: "/root/files"
+     state: directory
+  - name: copying the files
+    copy:
+      dest: "/root/files/index.html"
+      content: "check"
+  - name: Launching a httpd conatiner
+    docker_container:
+     name: webserver
+     state: started
+     image: httpd
+     ports: 8080:80
+     volumes:
+     - /root/files:/usr/local/apache2/htdocs/
